@@ -1,0 +1,1 @@
+"""Financial document management application."""

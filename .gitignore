@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+financial_documents.db
+app/storage/documents/*
+!app/storage/documents/.gitkeep
+app/storage/vector_db/*
+!app/storage/vector_db/.gitkeep
