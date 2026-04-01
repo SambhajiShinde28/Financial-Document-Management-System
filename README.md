@@ -85,7 +85,7 @@ Meaning of each key:
 ### 1. Create a virtual environment
 
 ```bash
-python -m venv .venv
+uv venv
 ```
 
 ### 2. Activate the virtual environment
@@ -105,7 +105,7 @@ Windows Command Prompt:
 ### 3. Install dependencies
 
 ```bash
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 ```
 
 ### 4. Create the `.env` file
@@ -431,8 +431,8 @@ Fix:
 This project already uses `pbkdf2_sha256` to avoid that issue. If you still see old dependency issues, reinstall packages:
 
 ```bash
-pip uninstall bcrypt -y
-pip install -r requirements.txt
+uv pip uninstall bcrypt
+uv pip install -r requirements.txt
 ```
 
 ### Authorize button in Swagger does not work
