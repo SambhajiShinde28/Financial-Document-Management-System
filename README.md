@@ -1,343 +1,121 @@
 # Financial Document Management System
 
-A beginner-friendly full-stack project for managing financial documents with authentication, role-based access control, and semantic search.
+FastAPI-based financial document management platform with JWT authentication, role-based access control, metadata search, and semantic retrieval over indexed document content.
 
-The backend is built with FastAPI and SQLAlchemy. The frontend is built with Streamlit. Uploaded documents can be indexed into a vector database and searched using semantic similarity.
+## Overview
 
-## What this project does
+This project provides a backend API and a Streamlit client for managing financial documents such as reports, invoices, and contracts. Documents are stored with structured metadata in a relational database and indexed into a vector store for semantic search and contextual retrieval.
 
-This system helps an organization:
+## Key Capabilities
 
-- register and log in users
-- assign roles and permissions
-- upload and manage financial documents
-- search documents by metadata
-- index document content into a vector database
-- run semantic search on indexed document chunks
-- fetch related context for a selected document
+- User registration and authentication with JWT
+- Role-based access control for `Admin`, `Financial Analyst`, `Auditor`, and `Client`
+- Document upload, retrieval, deletion, and metadata filtering
+- Text extraction from PDF, TXT, and MD files
+- Chunking, embedding generation, and vector indexing
+- Semantic search with a lightweight finance-aware reranking layer
+- Streamlit interface for end-to-end operation and testing
 
-## Tech stack
+## Technology Stack
 
 - FastAPI
 - Streamlit
-- SQLite
 - SQLAlchemy
-- JWT authentication
-- RBAC
-- LangChain text splitter
-- HuggingFace embeddings
+- SQLite
+- LangChain text splitters
+- HuggingFace sentence-transformer embeddings
 - Chroma vector database
-- PyPDF for PDF text extraction
+- PyPDF
 
-## Main features
-
-- User registration and login
-- JWT-based protected APIs
-- Role creation and role assignment
-- Default roles: `Admin`, `Financial Analyst`, `Auditor`, `Client`
-- Document upload, list, get, search, and delete
-- PDF, TXT, and MD document text extraction
-- Chunking and embedding generation
-- Vector storage in Chroma
-- Semantic search with a simple finance-aware reranking step
-- Streamlit UI for end-to-end testing
-
-## Project structure
+## Architecture
 
 ```text
-.
-├── app
-│   ├── api
-│   │   ├── dependencies.py
-│   │   └── routes
-│   ├── core
-│   ├── db
-│   ├── models
-│   ├── schemas
-│   ├── services
-│   └── storage
-├── streamlit_app.py
-├── requirements.txt
-├── .env.example
-└── README.md
+Streamlit UI
+    |
+    v
+FastAPI application
+    |
+    +-- Authentication and RBAC
+    +-- Document management APIs
+    +-- RAG indexing and retrieval services
+    |
+    +-- SQLite for metadata
+    +-- Local file storage for uploaded documents
+    +-- Chroma for vector search
 ```
 
-## Environment variables
+## Repository Structure
 
-Create a `.env` file in the project root.
+```text
+app/
+  api/
+  core/
+  db/
+  models/
+  schemas/
+  services/
+  storage/
+streamlit_app.py
+requirements.txt
+.env.example
+README.md
+```
 
-Example:
+## Configuration
+
+Create a `.env` file in the project root:
 
 ```env
-SECRET_KEY=9f4c2b7d1e3a8c6f0d5b9a2e7f1c4d8b6a9e3f2c7d1b5a8f0e4c6d9b2a7f1e3
+SECRET_KEY=your-generated-secret-key
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 EMBEDDING_MODEL_NAME=sentence-transformers/all-MiniLM-L6-v2
 ```
 
-Meaning of each key:
+`SECRET_KEY` is used to sign JWT tokens and should be a long random value generated for your environment.
 
-- `SECRET_KEY`: private key used to sign JWT tokens
-- `ACCESS_TOKEN_EXPIRE_MINUTES`: token expiry time in minutes
-- `EMBEDDING_MODEL_NAME`: embedding model used for semantic search
-
-## Setup instructions
-
-### 1. Create a virtual environment
+## Local Setup
 
 ```bash
 uv venv
-```
-
-### 2. Activate the virtual environment
-
-Windows PowerShell:
-
-```bash
 .venv\Scripts\Activate.ps1
-```
-
-Windows Command Prompt:
-
-```bash
-.venv\Scripts\activate
-```
-
-### 3. Install dependencies
-
-```bash
 uv pip install -r requirements.txt
 ```
 
-### 4. Create the `.env` file
+## Running the Application
 
-```bash
-copy .env.example .env
-```
-
-If you already have a `.env`, keep using that file.
-
-## How to run the project
-
-Open two terminals.
-
-### Terminal 1: Run FastAPI backend
+Start the API server:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-FastAPI docs will open at:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-### Terminal 2: Run Streamlit frontend
+Start the Streamlit client in a separate terminal:
 
 ```bash
 streamlit run streamlit_app.py
 ```
 
-## Recommended testing sequence
+Available interfaces:
 
-Use this order when testing the app from Streamlit or Swagger docs.
+- FastAPI docs: `http://127.0.0.1:8000/docs`
+- Streamlit UI: default Streamlit local URL shown in terminal
 
-### 1. Register user
+## Core API Surface
 
-Endpoint:
-
-```text
-POST /auth/register
-```
-
-Sample input:
-
-```json
-{
-  "full_name": "Aman Sharma",
-  "email": "aman@example.com",
-  "password": "Aman@123"
-}
-```
-
-Note:
-
-- the first registered user becomes `Admin`
-
-### 2. Login
-
-Endpoint:
-
-```text
-POST /auth/login
-```
-
-Sample input:
-
-```json
-{
-  "email": "aman@example.com",
-  "password": "Aman@123"
-}
-```
-
-### 3. Create role
-
-Endpoint:
-
-```text
-POST /roles/create
-```
-
-Sample input:
-
-```json
-{
-  "name": "Manager",
-  "permissions": [
-    "documents:create",
-    "documents:read",
-    "documents:index"
-  ]
-}
-```
-
-### 4. Assign role
-
-Endpoint:
-
-```text
-POST /users/assign-role
-```
-
-Sample input:
-
-```json
-{
-  "user_id": 1,
-  "role_name": "Financial Analyst"
-}
-```
-
-### 5. Upload document
-
-Endpoint:
-
-```text
-POST /documents/upload
-```
-
-Form input:
-
-```text
-title = Q4 Revenue Report
-company_name = ABC Finance Ltd
-document_type = report
-file = choose a PDF, TXT, or MD file
-```
-
-### 6. List all documents
-
-Endpoint:
-
-```text
-GET /documents
-```
-
-### 7. Search documents by metadata
-
-Endpoint:
-
-```text
-GET /documents/search
-```
-
-Example query values:
-
-```text
-title=Revenue
-company_name=ABC Finance Ltd
-document_type=report
-uploaded_by=1
-```
-
-### 8. Index document for semantic search
-
-Endpoint:
-
-```text
-POST /rag/index-document
-```
-
-Sample input:
-
-```json
-{
-  "document_id": 1
-}
-```
-
-### 9. Run semantic search
-
-Endpoint:
-
-```text
-POST /rag/search
-```
-
-Sample input:
-
-```json
-{
-  "query": "financial risk related to high debt ratio",
-  "top_k": 5
-}
-```
-
-### 10. Get document context
-
-Endpoint:
-
-```text
-GET /rag/context/{document_id}
-```
-
-Example:
-
-```text
-/rag/context/1
-```
-
-### 11. Delete document
-
-Endpoint:
-
-```text
-DELETE /documents/{document_id}
-```
-
-Example:
-
-```text
-/documents/1
-```
-
-## API summary
-
-### Authentication
+Authentication:
 
 - `POST /auth/register`
 - `POST /auth/login`
 - `POST /auth/token`
 
-### Roles and users
+Roles and users:
 
 - `POST /roles/create`
 - `POST /users/assign-role`
 - `GET /users/{id}/roles`
 - `GET /users/{id}/permissions`
 
-### Documents
+Documents:
 
 - `POST /documents/upload`
 - `GET /documents`
@@ -345,121 +123,54 @@ Example:
 - `GET /documents/{document_id}`
 - `DELETE /documents/{document_id}`
 
-### RAG
+RAG:
 
 - `POST /rag/index-document`
 - `DELETE /rag/remove-document/{document_id}`
 - `POST /rag/search`
 - `GET /rag/context/{document_id}`
 
-## Default roles and permissions
+## Typical Workflow
 
-### Admin
+1. Register the first user. The first account is assigned the `Admin` role automatically.
+2. Log in and obtain a JWT token, or use the Streamlit interface which stores it in session state.
+3. Upload financial documents with title, company name, and document type.
+4. Index selected documents through the RAG endpoint.
+5. Run metadata search or semantic search depending on the use case.
+6. Retrieve contextual chunks for a document or remove documents when no longer needed.
 
-- full access to documents
-- can create roles
-- can assign roles
-- can view roles and permissions
+## Storage
 
-### Financial Analyst
+- Relational metadata: `financial_documents.db`
+- Uploaded files: `app/storage/documents`
+- Vector store: `app/storage/vector_db`
 
-- can upload documents
-- can read documents
-- can index documents
+## Implementation Notes
 
-### Auditor
-
-- can read documents
-- can view roles
-- can view permissions
-
-### Client
-
-- can read documents
-
-## Streamlit dashboard
-
-The Streamlit UI supports:
-
-- register and login
-- role creation
-- role assignment
-- role and permission lookup
-- document upload
-- document listing and search
-- document deletion
-- RAG indexing
-- semantic search
-- context lookup
-- response viewer for debugging
-
-## Notes about authentication
-
-- `SECRET_KEY` is your app's JWT signing key
-- it is not a Groq key or model key
-- JWT token is generated after login
-- the JWT token should not be stored in `.env`
-
-## Data storage
-
-- relational data is stored in `financial_documents.db`
-- uploaded files are stored in `app/storage/documents`
-- vector data is stored in `app/storage/vector_db`
-
-## Important implementation notes
-
-- password hashing uses `pbkdf2_sha256`
-- first registered user is assigned the `Admin` role automatically
-- deleting a document also removes its vector index
-- semantic search uses local embeddings, not Groq
+- Password hashing uses `pbkdf2_sha256`
+- Document deletion also removes indexed vector entries
+- Semantic retrieval uses local embeddings and does not require an external LLM provider
+- Swagger authorization is supported through the `/auth/token` endpoint
 
 ## Troubleshooting
 
-### 403 Forbidden on role creation
+`403 Forbidden` on role operations:
+- Log in with an `Admin` user. Only users with `roles:create` can create roles.
 
-Reason:
-
-- current user does not have `roles:create`
-
-Fix:
-
-- log in with the first registered user
-- or recreate the database and register a fresh first user
-
-### Register endpoint crashes with bcrypt error
-
-This project already uses `pbkdf2_sha256` to avoid that issue. If you still see old dependency issues, reinstall packages:
+Password hashing or legacy bcrypt issues:
 
 ```bash
 uv pip uninstall bcrypt
 uv pip install -r requirements.txt
 ```
 
-### Authorize button in Swagger does not work
+No semantic results returned:
+- Ensure the document was uploaded successfully, contains readable text, and has been indexed via `/rag/index-document`.
 
-Use the built-in token flow:
+## Future Enhancements
 
-- click `Authorize`
-- enter email in the `username` field
-- enter password normally
-
-### Semantic search returns nothing
-
-Check that:
-
-- the document was uploaded successfully
-- the document was indexed using `/rag/index-document`
-- the file contains readable text
-
-## Future improvements
-
-- add refresh tokens
-- add document update endpoint
-- support more document formats
-- add better reranking model
-- add audit logs
-- add containerization with Docker
-
-## Author note
-
-This project is written in a clean and simple style so it is easy to understand, test, and extend.
+- Refresh-token support
+- Document update and versioning
+- Additional document parsers
+- Model-based reranking
+- Dockerized deployment
